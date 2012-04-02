@@ -1,0 +1,129 @@
+BEGIN;
+CREATE TABLE "coop_web_role" (
+    "id" serial NOT NULL PRIMARY KEY,
+    "role" varchar(30) NOT NULL,
+    "role_details" text NOT NULL
+)
+;
+CREATE TABLE "coop_web_worker_roles" (
+    "id" serial NOT NULL PRIMARY KEY,
+    "worker_id" integer NOT NULL,
+    "role_id" integer NOT NULL REFERENCES "coop_web_role" ("id") DEFERRABLE INITIALLY DEFERRED,
+    UNIQUE ("worker_id", "role_id")
+)
+;
+CREATE TABLE "coop_web_worker" (
+    "id" serial NOT NULL PRIMARY KEY
+)
+;
+ALTER TABLE "coop_web_worker_roles" ADD CONSTRAINT "worker_id_refs_id_b95d5bab" FOREIGN KEY ("worker_id") REFERENCES "coop_web_worker" ("id") DEFERRABLE INITIALLY DEFERRED;
+CREATE TABLE "coop_web_order" (
+    "id" serial NOT NULL PRIMARY KEY,
+    "notes" text NOT NULL
+)
+;
+CREATE TABLE "coop_web_address" (
+    "id" serial NOT NULL PRIMARY KEY,
+    "street_name" varchar(50) NOT NULL,
+    "unit_number" integer,
+    "street_number" integer NOT NULL,
+    "postcode" integer NOT NULL,
+    "suburb_town_locality" varchar(40) NOT NULL
+)
+;
+CREATE TABLE "coop_web_member_orders" (
+    "id" serial NOT NULL PRIMARY KEY,
+    "member_id" integer NOT NULL,
+    "order_id" integer NOT NULL REFERENCES "coop_web_order" ("id") DEFERRABLE INITIALLY DEFERRED,
+    UNIQUE ("member_id", "order_id")
+)
+;
+CREATE TABLE "coop_web_member" (
+    "id" serial NOT NULL PRIMARY KEY,
+    "worker_id_id" integer REFERENCES "coop_web_worker" ("id") DEFERRABLE INITIALLY DEFERRED,
+    "first_name" varchar(30) NOT NULL,
+    "last_name" varchar(30) NOT NULL,
+    "paid_member" boolean NOT NULL,
+    "address_id_id" integer NOT NULL REFERENCES "coop_web_address" ("id") DEFERRABLE INITIALLY DEFERRED
+)
+;
+ALTER TABLE "coop_web_member_orders" ADD CONSTRAINT "member_id_refs_id_f16a4b54" FOREIGN KEY ("member_id") REFERENCES "coop_web_member" ("id") DEFERRABLE INITIALLY DEFERRED;
+CREATE TABLE "coop_web_lineitem" (
+    "id" serial NOT NULL PRIMARY KEY,
+    "quantity" integer NOT NULL
+)
+;
+CREATE TABLE "coop_web_product" (
+    "id" serial NOT NULL PRIMARY KEY,
+    "product_code" integer,
+    "description" varchar(100) NOT NULL,
+    "size" numeric(10, 2),
+    "size_unit" varchar(10),
+    "gst_taxable" boolean,
+    "barcode" varchar(100),
+    "price_wholesale" numeric(8, 2),
+    "price_wholesale_gst" numeric(8, 2),
+    "price_retail" numeric(8, 2),
+    "price_retail_gst" numeric(8, 2),
+    "item_type" varchar(30),
+    "item_number" integer,
+    "brand" varchar(30),
+    "location" varchar(40)
+)
+;
+CREATE TABLE "coop_web_producer_products" (
+    "id" serial NOT NULL PRIMARY KEY,
+    "producer_id" integer NOT NULL,
+    "product_id" integer NOT NULL REFERENCES "coop_web_product" ("id") DEFERRABLE INITIALLY DEFERRED,
+    UNIQUE ("producer_id", "product_id")
+)
+;
+CREATE TABLE "coop_web_producer" (
+    "id" serial NOT NULL PRIMARY KEY,
+    "name" varchar(100) NOT NULL,
+    "address_id" integer NOT NULL REFERENCES "coop_web_address" ("id") DEFERRABLE INITIALLY DEFERRED
+)
+;
+ALTER TABLE "coop_web_producer_products" ADD CONSTRAINT "producer_id_refs_id_f689d58f" FOREIGN KEY ("producer_id") REFERENCES "coop_web_producer" ("id") DEFERRABLE INITIALLY DEFERRED;
+CREATE TABLE "coop_web_distributor_products" (
+    "id" serial NOT NULL PRIMARY KEY,
+    "distributor_id" integer NOT NULL,
+    "product_id" integer NOT NULL REFERENCES "coop_web_product" ("id") DEFERRABLE INITIALLY DEFERRED,
+    UNIQUE ("distributor_id", "product_id")
+)
+;
+CREATE TABLE "coop_web_distributor" (
+    "id" serial NOT NULL PRIMARY KEY,
+    "name" varchar(100) NOT NULL,
+    "address_id" integer NOT NULL REFERENCES "coop_web_address" ("id") DEFERRABLE INITIALLY DEFERRED
+)
+;
+ALTER TABLE "coop_web_distributor_products" ADD CONSTRAINT "distributor_id_refs_id_9ee163f3" FOREIGN KEY ("distributor_id") REFERENCES "coop_web_distributor" ("id") DEFERRABLE INITIALLY DEFERRED;
+CREATE TABLE "coop_web_certification_products" (
+    "id" serial NOT NULL PRIMARY KEY,
+    "certification_id" integer NOT NULL,
+    "product_id" integer NOT NULL REFERENCES "coop_web_product" ("id") DEFERRABLE INITIALLY DEFERRED,
+    UNIQUE ("certification_id", "product_id")
+)
+;
+CREATE TABLE "coop_web_certification" (
+    "id" serial NOT NULL PRIMARY KEY,
+    "certification_type" varchar(30) NOT NULL,
+    "name" varchar(30) NOT NULL
+)
+;
+ALTER TABLE "coop_web_certification_products" ADD CONSTRAINT "certification_id_refs_id_89e8ef85" FOREIGN KEY ("certification_id") REFERENCES "coop_web_certification" ("id") DEFERRABLE INITIALLY DEFERRED;
+CREATE TABLE "coop_web_type_products" (
+    "id" serial NOT NULL PRIMARY KEY,
+    "type_id" integer NOT NULL,
+    "product_id" integer NOT NULL REFERENCES "coop_web_product" ("id") DEFERRABLE INITIALLY DEFERRED,
+    UNIQUE ("type_id", "product_id")
+)
+;
+CREATE TABLE "coop_web_type" (
+    "id" serial NOT NULL PRIMARY KEY,
+    "description" varchar(100) NOT NULL
+)
+;
+ALTER TABLE "coop_web_type_products" ADD CONSTRAINT "type_id_refs_id_db30b765" FOREIGN KEY ("type_id") REFERENCES "coop_web_type" ("id") DEFERRABLE INITIALLY DEFERRED;
+COMMIT;
